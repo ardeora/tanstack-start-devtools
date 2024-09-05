@@ -11,19 +11,31 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as AboutImport } from './routes/about'
+import { Route as SalesImport } from './routes/sales'
 import { Route as IndexImport } from './routes/index'
+import { Route as SalesCategoryImport } from './routes/sales.$category'
+import { Route as SalesCategoryIdImport } from './routes/sales.$category.$id'
 
 // Create/Update Routes
 
-const AboutRoute = AboutImport.update({
-  path: '/about',
+const SalesRoute = SalesImport.update({
+  path: '/sales',
   getParentRoute: () => rootRoute,
 } as any)
 
 const IndexRoute = IndexImport.update({
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const SalesCategoryRoute = SalesCategoryImport.update({
+  path: '/$category',
+  getParentRoute: () => SalesRoute,
+} as any)
+
+const SalesCategoryIdRoute = SalesCategoryIdImport.update({
+  path: '/$id',
+  getParentRoute: () => SalesCategoryRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -37,19 +49,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/about': {
-      id: '/about'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutImport
+    '/sales': {
+      id: '/sales'
+      path: '/sales'
+      fullPath: '/sales'
+      preLoaderRoute: typeof SalesImport
       parentRoute: typeof rootRoute
+    }
+    '/sales/$category': {
+      id: '/sales/$category'
+      path: '/$category'
+      fullPath: '/sales/$category'
+      preLoaderRoute: typeof SalesCategoryImport
+      parentRoute: typeof SalesImport
+    }
+    '/sales/$category/$id': {
+      id: '/sales/$category/$id'
+      path: '/$id'
+      fullPath: '/sales/$category/$id'
+      preLoaderRoute: typeof SalesCategoryIdImport
+      parentRoute: typeof SalesCategoryImport
     }
   }
 }
 
 // Create and export the route tree
 
-export const routeTree = rootRoute.addChildren({ IndexRoute, AboutRoute })
+export const routeTree = rootRoute.addChildren({
+  IndexRoute,
+  SalesRoute: SalesRoute.addChildren({
+    SalesCategoryRoute: SalesCategoryRoute.addChildren({
+      SalesCategoryIdRoute,
+    }),
+  }),
+})
 
 /* prettier-ignore-end */
 
@@ -60,14 +93,28 @@ export const routeTree = rootRoute.addChildren({ IndexRoute, AboutRoute })
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/about"
+        "/sales"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/about": {
-      "filePath": "about.tsx"
+    "/sales": {
+      "filePath": "sales.tsx",
+      "children": [
+        "/sales/$category"
+      ]
+    },
+    "/sales/$category": {
+      "filePath": "sales.$category.tsx",
+      "parent": "/sales",
+      "children": [
+        "/sales/$category/$id"
+      ]
+    },
+    "/sales/$category/$id": {
+      "filePath": "sales.$category.$id.tsx",
+      "parent": "/sales/$category"
     }
   }
 }
